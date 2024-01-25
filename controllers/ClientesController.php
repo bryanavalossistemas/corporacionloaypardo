@@ -11,15 +11,12 @@ class ClientesController
 {
     public static function index(Router $router)
     {
-        if (!is_admin()) {
-            header('Location: /login');
-        }
         $pagina_actual = $_GET['page'];
         $pagina_actual = filter_var($pagina_actual, FILTER_VALIDATE_INT);
-        if (!$pagina_actual || $pagina_actual < 1) {
+        if (!$pagina_actual) {
             header('Location: /admin/clientes?page=1');
         }
-        $por_pagina = 1;
+        $por_pagina = 5;
         $total = Cliente::total();
         $paginacion = new Paginacion($pagina_actual, $por_pagina, $total);
         $clientes = Cliente::paginar($por_pagina, $paginacion->offset());
@@ -32,17 +29,9 @@ class ClientesController
 
     public static function crear(Router $router)
     {
-        if (!is_admin()) {
-            header('Location: /login');
-            return;
-        }
         $alertas = [];
         $cliente = new Cliente;
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (!is_admin()) {
-                header('Location: /login');
-                return;
-            }
             if (!empty($_FILES['imagen']['tmp_name'])) {
                 $carpeta_imagenes = '../public/img/clientes';
                 if (!is_dir($carpeta_imagenes)) {
@@ -58,11 +47,8 @@ class ClientesController
             $cliente->sincronizar($_POST);
             $alertas = $cliente->validar();
             if (empty($alertas)) {
-                $resultado = $cliente->guardar();
-                if ($resultado) {
-                    header('Location: /admin/clientes');
-                    return;
-                }
+                $cliente->guardar();
+                header('Location: /admin/clientes');
             }
         }
         $router->render('admin/clientes/crear', [
@@ -74,28 +60,11 @@ class ClientesController
 
     public static function editar(Router $router)
     {
-        if (!is_admin()) {
-            header('Location: /login');
-            return;
-        }
         $alertas = [];
         $id = $_GET['id'];
-        $id = filter_var($id, FILTER_VALIDATE_INT);
-        if (!$id) {
-            header('Location: /admin/clientes');
-            return;
-        }
         $cliente = Cliente::find($id);
-        if (!$cliente) {
-            header('Location: /admin/clientes');
-            return;
-        }
         $cliente->imagen_actual = $cliente->imagen;
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (!is_admin()) {
-                header('Location: /login');
-                return;
-            }
             if (!empty($_FILES['imagen']['tmp_name'])) {
                 $carpeta_imagenes = '../public/img/clientes';
                 if (!is_dir($carpeta_imagenes)) {
@@ -115,11 +84,8 @@ class ClientesController
                     $imagen_png->save($carpeta_imagenes . '/' . $nombre_imagen . ".png");
                     $imagen_webp->save($carpeta_imagenes . '/' . $nombre_imagen . ".webp");
                 }
-                $resultado = $cliente->guardar();
-                if ($resultado) {
-                    header('Location: /admin/clientes');
-                    return;
-                }
+                $cliente->guardar();
+                header('Location: /admin/clientes');
             }
         }
         $router->render('admin/clientes/editar', [
@@ -131,23 +97,9 @@ class ClientesController
 
     public static function eliminar()
     {
-
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (!is_admin()) {
-                header('Location: /login');
-                return;
-            }
-            $id = $_POST['id'];
-            $cliente = Cliente::find($id);
-            if (!isset($cliente)) {
-                header('Location: /admin/clientes');
-                return;
-            }
-            $resultado = $cliente->eliminar();
-            if ($resultado) {
-                header('Location: /admin/clientes');
-                return;
-            }
-        }
+        $id = $_POST['id'];
+        $cliente = Cliente::find($id);
+        $cliente->eliminar();
+        header('Location: /admin/clientes');
     }
 }

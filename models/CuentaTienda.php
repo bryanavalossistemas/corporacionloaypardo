@@ -47,7 +47,7 @@ class CuentaTienda extends ActiveRecord
         return self::$alertas;
     }
 
-    public static function paginar($por_pagina, $offset, $id='')
+    public static function paginar_id($por_pagina, $offset, $id='')
     {
         $query = "SELECT cuentas_tienda.id, cuentas_tienda.nombre, cuentas_tienda.numero, tipos_cuenta.nombre as tipo_cuenta, bancos.nombre as banco, monedas.nombre as moneda, tiendas.nombre as tienda
         FROM cuentas_tienda

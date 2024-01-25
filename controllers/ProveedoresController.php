@@ -11,15 +11,12 @@ class ProveedoresController
 {
     public static function index(Router $router)
     {
-        if (!is_admin()) {
-            header('Location: /login');
-        }
         $pagina_actual = $_GET['page'];
         $pagina_actual = filter_var($pagina_actual, FILTER_VALIDATE_INT);
-        if (!$pagina_actual || $pagina_actual < 1) {
+        if (!$pagina_actual) {
             header('Location: /admin/proveedores?page=1');
         }
-        $por_pagina = 1;
+        $por_pagina = 5;
         $total = Proveedor::total();
         $paginacion = new Paginacion($pagina_actual, $por_pagina, $total);
         $proveedores = Proveedor::paginar($por_pagina, $paginacion->offset());
@@ -32,17 +29,9 @@ class ProveedoresController
 
     public static function crear(Router $router)
     {
-        if (!is_admin()) {
-            header('Location: /login');
-            return;
-        }
         $alertas = [];
         $proveedor = new Proveedor;
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (!is_admin()) {
-                header('Location: /login');
-                return;
-            }
             if (!empty($_FILES['imagen']['tmp_name'])) {
                 $carpeta_imagenes = '../public/img/proveedores';
                 if (!is_dir($carpeta_imagenes)) {
@@ -58,11 +47,8 @@ class ProveedoresController
             $proveedor->sincronizar($_POST);
             $alertas = $proveedor->validar();
             if (empty($alertas)) {
-                $resultado = $proveedor->guardar();
-                if ($resultado) {
-                    header('Location: /admin/proveedores');
-                    return;
-                }
+                $proveedor->guardar();
+                header('Location: /admin/proveedores');
             }
         }
         $router->render('admin/proveedores/crear', [
@@ -74,28 +60,11 @@ class ProveedoresController
 
     public static function editar(Router $router)
     {
-        if (!is_admin()) {
-            header('Location: /login');
-            return;
-        }
         $alertas = [];
         $id = $_GET['id'];
-        $id = filter_var($id, FILTER_VALIDATE_INT);
-        if (!$id) {
-            header('Location: /admin/proveedores');
-            return;
-        }
         $proveedor = Proveedor::find($id);
-        if (!$proveedor) {
-            header('Location: /admin/proveedores');
-            return;
-        }
         $proveedor->imagen_actual = $proveedor->imagen;
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (!is_admin()) {
-                header('Location: /login');
-                return;
-            }
             if (!empty($_FILES['imagen']['tmp_name'])) {
                 $carpeta_imagenes = '../public/img/proveedores';
                 if (!is_dir($carpeta_imagenes)) {
@@ -115,11 +84,8 @@ class ProveedoresController
                     $imagen_png->save($carpeta_imagenes . '/' . $nombre_imagen . ".png");
                     $imagen_webp->save($carpeta_imagenes . '/' . $nombre_imagen . ".webp");
                 }
-                $resultado = $proveedor->guardar();
-                if ($resultado) {
-                    header('Location: /admin/proveedores');
-                    return;
-                }
+                $proveedor->guardar();
+                header('Location: /admin/proveedores');
             }
         }
         $router->render('admin/proveedores/editar', [
@@ -131,23 +97,9 @@ class ProveedoresController
 
     public static function eliminar()
     {
-
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (!is_admin()) {
-                header('Location: /login');
-                return;
-            }
-            $id = $_POST['id'];
-            $proveedor = Proveedor::find($id);
-            if (!isset($proveedor)) {
-                header('Location: /admin/proveedores');
-                return;
-            }
-            $resultado = $proveedor->eliminar();
-            if ($resultado) {
-                header('Location: /admin/proveedores');
-                return;
-            }
-        }
+        $id = $_POST['id'];
+        $proveedor = Proveedor::find($id);
+        $proveedor->eliminar();
+        header('Location: /admin/proveedores');
     }
 }

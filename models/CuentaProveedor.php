@@ -45,7 +45,7 @@ class CuentaProveedor extends ActiveRecord
         return self::$alertas;
     }
 
-    public static function paginar($por_pagina, $offset, $id = '')
+    public static function paginar_id($por_pagina, $offset, $id = '')
     {
         $query = "SELECT cuentas_proveedor.id, cuentas_proveedor.numero, tipos_cuenta.nombre as tipo_cuenta, bancos.nombre as banco, monedas.nombre as moneda, proveedores.nombre as proveedor
         FROM cuentas_proveedor

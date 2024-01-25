@@ -15,8 +15,6 @@ class ActiveRecord
     // Alertas y Mensajes
     protected static $alertas = [];
 
-    public $id;
-
     // Definir la conexión a la BD - includes/database.php
     public static function setDB($database)
     {
@@ -56,7 +54,6 @@ class ActiveRecord
 
         // liberar la memoria
         $resultado->free();
-
         // retornar los resultados
         return $array;
     }
@@ -65,36 +62,12 @@ class ActiveRecord
     protected static function crearObjeto($registro)
     {
         $objeto = new static;
-
         foreach ($registro as $key => $value) {
             if (property_exists($objeto, $key)) {
                 $objeto->$key = $value;
             }
         }
         return $objeto;
-    }
-
-    // Identificar y unir los atributos de la BD
-    public function atributos()
-    {
-        $atributos = [];
-        foreach (static::$columnasDB as $columna) {
-            if ($columna === 'id') continue;
-            $atributos[$columna] = $this->$columna;
-        }
-        return $atributos;
-    }
-
-    // Sanitizar los datos antes de guardarlos en la BD
-    public function sanitizarAtributos()
-    {
-        $atributos = $this->atributos();
-        $sanitizado = [];
-        foreach ($atributos as $key => $value) {
-            if (is_null($value)) continue;
-            $sanitizado[$key] = self::$db->escape_string($value);
-        }
-        return $sanitizado;
     }
 
     // Sincroniza BD con Objetos en memoria
@@ -111,13 +84,80 @@ class ActiveRecord
     public function guardar()
     {
         $resultado = '';
-        if (!is_null($this->id)) {
-            // actualizar
-            $resultado = $this->actualizar();
-        } else {
+        if (is_null($this->id)) {
             // Creando un nuevo registro
             $resultado = $this->crear();
+        } else {
+            // actualizar
+            $resultado = $this->actualizar();
         }
+        return $resultado;
+    }
+
+    // crea un nuevo registro
+    public function crear()
+    {
+        // Obter atributos no nulos
+        $atributos = $this->atributos();
+        // Insertar en la base de datos
+
+        if (empty($atributos)) {
+            $query = "INSERT INTO " . static::$tabla . " () VALUES ()";
+        } else {
+            $query = "INSERT INTO " . static::$tabla . " (";
+            $query .= join(', ', array_keys($atributos));
+            $query .= ") VALUES ('";
+            $query .= join("', '", array_values($atributos));
+            $query .= "')";
+        }
+        // debuguear($query); // Descomentar si no te funciona algo
+
+        // Resultado de la consulta
+        $resultado = self::$db->query($query);
+        return [
+            'resultado' =>  $resultado,
+            'id' => self::$db->insert_id
+        ];
+    }
+
+    // Actualizar el registro
+    public function actualizar()
+    {
+        // Sanitizar los datos
+        $atributos = $this->atributos();
+
+        // Iterar para ir agregando cada campo de la BD
+        $valores = [];
+        foreach ($atributos as $key => $value) {
+            $valores[] = "$key='$value'";
+        }
+
+        // Consulta SQL
+        $query = 'UPDATE ' . static::$tabla . ' SET ';
+        $query .=  join(', ', $valores);
+        $query .= ' WHERE id=' . $this->id;
+
+        // Actualizar BD
+        $resultado = self::$db->query($query);
+        return $resultado;
+    }
+
+    // Identificar y unir los atributos de la BD
+    public function atributos()
+    {
+        $atributos = [];
+        foreach (static::$columnasDB as $columna) {
+            if ($columna === 'id' || is_null($this->$columna)) continue;
+            $atributos[$columna] = $this->$columna;
+        }
+        return $atributos;
+    }
+
+    // Obtener todos los registros con OFFSET
+    public static function paginar($por_pagina, $offset)
+    {
+        $query = "SELECT * FROM " . static::$tabla . " ORDER BY id DESC LIMIT $por_pagina OFFSET $offset";
+        $resultado = self::consultarSQL($query);
         return $resultado;
     }
 
@@ -134,14 +174,6 @@ class ActiveRecord
     {
         if (is_null($id)) return NULL;
         $query = "SELECT * FROM " . static::$tabla  . " WHERE id = $id";
-        $resultado = self::consultarSQL($query);
-        return array_shift($resultado);
-    }
-
-    // Obtener Registros con cierta cantidad
-    public static function get($limite)
-    {
-        $query = "SELECT * FROM " . static::$tabla . " LIMIT $limite ORDER BY id DESC";
         $resultado = self::consultarSQL($query);
         return array_shift($resultado);
     }
@@ -164,62 +196,6 @@ class ActiveRecord
         $total = $resultado->fetch_array();
 
         return array_shift($total);
-    }
-
-    public static function paginar($por_pagina, $offset, $id = '')
-    {
-        $query = "SELECT * FROM " . static::$tabla . " ORDER BY id DESC LIMIT $por_pagina OFFSET $offset";
-        $resultado = self::consultarSQL($query);
-        return $resultado;
-    }
-
-    // crea un nuevo registro
-    public function crear()
-    {
-        // Sanitizar los datos
-        $atributos = $this->sanitizarAtributos();
-        // Insertar en la base de datos
-
-        if (!empty($atributos)) {
-            $query = "INSERT INTO " . static::$tabla . " (";
-            $query .= join(', ', array_keys($atributos));
-            $query .= ") VALUES ('";
-            $query .= join("', '", array_values($atributos));
-            $query .= "')";
-        } else {
-            $query = "INSERT INTO " . static::$tabla . " () VALUES ()";
-        }
-        // debuguear($query); // Descomentar si no te funciona algo
-
-        // Resultado de la consulta
-        $resultado = self::$db->query($query);
-        return [
-            'resultado' =>  $resultado,
-            'id' => self::$db->insert_id
-        ];
-    }
-
-    // Actualizar el registro
-    public function actualizar()
-    {
-        // Sanitizar los datos
-        $atributos = $this->sanitizarAtributos();
-
-        // Iterar para ir agregando cada campo de la BD
-        $valores = [];
-        foreach ($atributos as $key => $value) {
-            $valores[] = "{$key}='{$value}'";
-        }
-
-        // Consulta SQL
-        $query = "UPDATE " . static::$tabla . " SET ";
-        $query .=  join(', ', $valores);
-        $query .= " WHERE id = '" . self::$db->escape_string($this->id) . "' ";
-        $query .= " LIMIT 1 ";
-
-        // Actualizar BD
-        $resultado = self::$db->query($query);
-        return $resultado;
     }
 
     // Eliminar un Registro por su ID

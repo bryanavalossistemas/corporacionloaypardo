@@ -11,15 +11,11 @@ class TiendasController
 {
     public static function index(Router $router)
     {
-        if (!is_admin()) {
-            header('Location: /login');
-        }
         $pagina_actual = $_GET['page'];
-        $pagina_actual = filter_var($pagina_actual, FILTER_VALIDATE_INT);
-        if (!$pagina_actual || $pagina_actual < 1) {
+        if (!$pagina_actual) {
             header('Location: /admin/tiendas?page=1');
         }
-        $por_pagina = 1;
+        $por_pagina = 5;
         $total = Tienda::total();
         $paginacion = new Paginacion($pagina_actual, $por_pagina, $total);
         $tiendas = Tienda::paginar($por_pagina, $paginacion->offset());
@@ -32,17 +28,9 @@ class TiendasController
 
     public static function crear(Router $router)
     {
-        if (!is_admin()) {
-            header('Location: /login');
-            return;
-        }
         $alertas = [];
         $tienda = new Tienda;
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (!is_admin()) {
-                header('Location: /login');
-                return;
-            }
             if (!empty($_FILES['imagen']['tmp_name'])) {
                 $carpeta_imagenes = '../public/img/tiendas';
                 if (!is_dir($carpeta_imagenes)) {
@@ -58,11 +46,8 @@ class TiendasController
             $tienda->sincronizar($_POST);
             $alertas = $tienda->validar();
             if (empty($alertas)) {
-                $resultado = $tienda->guardar();
-                if ($resultado) {
-                    header('Location: /admin/tiendas');
-                    return;
-                }
+                $tienda->guardar();
+                header('Location: /admin/tiendas');
             }
         }
         $router->render('admin/tiendas/crear', [
@@ -74,28 +59,11 @@ class TiendasController
 
     public static function editar(Router $router)
     {
-        if (!is_admin()) {
-            header('Location: /login');
-            return;
-        }
         $alertas = [];
         $id = $_GET['id'];
-        $id = filter_var($id, FILTER_VALIDATE_INT);
-        if (!$id) {
-            header('Location: /admin/tiendas');
-            return;
-        }
         $tienda = Tienda::find($id);
-        if (!$tienda) {
-            header('Location: /admin/tiendas');
-            return;
-        }
         $tienda->imagen_actual = $tienda->imagen;
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (!is_admin()) {
-                header('Location: /login');
-                return;
-            }
             if (!empty($_FILES['imagen']['tmp_name'])) {
                 $carpeta_imagenes = '../public/img/tiendas';
                 if (!is_dir($carpeta_imagenes)) {
@@ -115,11 +83,8 @@ class TiendasController
                     $imagen_png->save($carpeta_imagenes . '/' . $nombre_imagen . ".png");
                     $imagen_webp->save($carpeta_imagenes . '/' . $nombre_imagen . ".webp");
                 }
-                $resultado = $tienda->guardar();
-                if ($resultado) {
-                    header('Location: /admin/tiendas');
-                    return;
-                }
+                $tienda->guardar();
+                header('Location: /admin/tiendas');
             }
         }
         $router->render('admin/tiendas/editar', [
@@ -131,23 +96,9 @@ class TiendasController
 
     public static function eliminar()
     {
-
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (!is_admin()) {
-                header('Location: /login');
-                return;
-            }
-            $id = $_POST['id'];
-            $tienda = Tienda::find($id);
-            if (!isset($tienda)) {
-                header('Location: /admin/tiendas');
-                return;
-            }
-            $resultado = $tienda->eliminar();
-            if ($resultado) {
-                header('Location: /admin/tiendas');
-                return;
-            }
-        }
+        $id = $_POST['id'];
+        $tienda = Tienda::find($id);
+        $tienda->eliminar();
+        header('Location: /admin/tiendas');
     }
 }

@@ -63,13 +63,13 @@
                             <?php echo $producto->stock; ?>
                         </td>
                         <td class="table__td">
-                            <?php echo $producto->categoria->nombre; ?>
+                            <?php echo $producto->categoria_nombre; ?>
                         </td>
                         <td class="table__td">
-                            <?php echo $producto->marca->nombre; ?>
+                            <?php echo $producto->marca_nombre; ?>
                         </td>
                         <td class="table__td">
-                            <?php echo $producto->unidad->nombre; ?>
+                            <?php echo $producto->unidad_nombre; ?>
                         </td>
                         <td class="table__td--acciones">
                             <a class="table__accion table__accion--editar" href="/admin/productos/editar?id=<?php echo $producto->id; ?>">
