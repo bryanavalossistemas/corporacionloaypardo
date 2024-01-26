@@ -44,6 +44,9 @@ class CuentaTienda extends ActiveRecord
         if (!$this->banco_id) {
             self::$alertas['error'][] = 'El Banco de la Cuenta es Obligatorio';
         }
+        if (!$this->moneda_id) {
+            self::$alertas['error'][] = 'La Moneda de la Cuenta es Obligatoria';
+        }
         return self::$alertas;
     }
 
