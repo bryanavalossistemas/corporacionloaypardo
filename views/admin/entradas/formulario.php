@@ -12,7 +12,7 @@
     <div class="formulario__campo formulario__campo--entrada-producto">
         <div>
             <label class="formulario__label" for="proveedor">Seleccionar Producto</label>
-            <input class="formulario__input" type="text" name="producto_nombre" id="producto" list="lista_productos">
+            <input class="formulario__input" type="text" name="producto_nombre" id="producto" list="lista_productos" value="<?php echo $producto->nombre ?>">
             <datalist id="lista_productos">
                 <?php foreach ($productos as $producto) { ?>
                     <option value="<?php echo $producto->nombre; ?>" />
@@ -21,7 +21,7 @@
         </div>
         <div>
             <label class="formulario__label" for="cantidad">Cantidad</label>
-            <input class="formulario__input" type="number" name="cantidad" id="cantidad">
+            <input class="formulario__input" type="number" name="cantidad" id="cantidad" value="<?php echo $cantidad; ?>">
         </div>
     </div>
     <?php if (isset($seleccionar_producto)) { ?>

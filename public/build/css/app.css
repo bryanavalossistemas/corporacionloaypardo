@@ -249,6 +249,16 @@ h3 {
   display: flex;
   flex-direction: column;
 }
+.formulario__boton-detalle-flex {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 2rem;
+}
+.formulario__detalle-proforma {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
 .formulario__fieldset {
   border: none;
   margin-top: 1rem;
@@ -278,6 +288,11 @@ h3 {
 .formulario__campo--entrada-producto {
   display: grid;
   grid-template-columns: 3fr 1fr;
+}
+.formulario__campo--proforma-producto {
+  display: grid;
+  grid-template-columns: 4fr 1fr 1fr;
+  margin-bottom: 0;
 }
 .formulario__label {
   color: rgba(26, 27, 21, 0.8);
@@ -322,6 +337,7 @@ h3 {
 .formulario__submit--width-auto {
   width: auto;
   margin-bottom: 1.5rem;
+  align-self: end;
 }
 
 .acciones {

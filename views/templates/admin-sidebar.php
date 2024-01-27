@@ -34,5 +34,19 @@
                 Entradas
             </span>
         </a>
+
+        <a href="/admin/proformas" class="dashboard__enlace <?php echo pagina_actual('/admin/proformas') ? 'dashboard__enlace--actual' : '' ?>">
+            <i class="fa-solid fa-clipboard-list"></i>
+            <span class="dashboard__menu-texto">
+                Proformas
+            </span>
+        </a>
+
+        <a href="/admin/facturas" class="dashboard__enlace <?php echo pagina_actual('/admin/facturas') ? 'dashboard__enlace--actual' : '' ?>">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+            <span class="dashboard__menu-texto">
+                Facturas
+            </span>
+        </a>
     </nav>
 </aside>

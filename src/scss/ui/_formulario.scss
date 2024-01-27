@@ -4,6 +4,16 @@
 .formulario {
     display: flex;
     flex-direction: column;
+    &__boton-detalle-flex {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 2rem;
+    }
+    &__detalle-proforma {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
     &__fieldset {
         border: none;
         margin-top: 1rem;
@@ -32,6 +42,11 @@
         &--entrada-producto {
             display: grid;
             grid-template-columns: 3fr 1fr;
+        }
+        &--proforma-producto {
+            display: grid;
+            grid-template-columns: 4fr 1fr 1fr;
+            margin-bottom: 0;
         }
     }
     &__label {
@@ -63,6 +78,7 @@
         &--width-auto {
             width: auto;
             margin-bottom: 1.5rem;
+            align-self: end;
         }
     }
 }

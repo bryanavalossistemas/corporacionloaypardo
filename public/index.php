@@ -10,9 +10,11 @@ use Controllers\ClientesController;
 use Controllers\CuentasProveedorController;
 use Controllers\CuentasTiendaController;
 use Controllers\EntradasController;
+use Controllers\FacturasController;
 use Controllers\MarcasController;
 use Controllers\MonedasController;
 use Controllers\ProductosController;
+use Controllers\ProformasController;
 use Controllers\ProveedoresController;
 use Controllers\TiendasController;
 use Controllers\TiposCuentaController;
@@ -139,5 +141,25 @@ $router->post('/admin/entradas/editar', [EntradasController::class, 'editar']);
 $router->post('/admin/entradas/eliminar', [EntradasController::class, 'eliminar']);
 $router->get('/admin/entradas/crear_entrada_vacia', [EntradasController::class, 'crear_entrada_vacia']);
 $router->get('/admin/entradas/eliminar_producto', [EntradasController::class, 'eliminar_producto']);
+
+// Proformas
+$router->get('/admin/proformas', [ProformasController::class, 'index']);
+$router->get('/admin/proformas/crear', [ProformasController::class, 'crear']);
+$router->post('/admin/proformas/crear', [ProformasController::class, 'crear']);
+$router->get('/admin/proformas/editar', [ProformasController::class, 'editar']);
+$router->post('/admin/proformas/editar', [ProformasController::class, 'editar']);
+$router->post('/admin/proformas/eliminar', [ProformasController::class, 'eliminar']);
+$router->get('/admin/proformas/crear_proforma_vacia', [ProformasController::class, 'crear_proforma_vacia']);
+$router->get('/admin/proformas/eliminar_producto', [ProformasController::class, 'eliminar_producto']);
+
+// Facturas
+$router->get('/admin/facturas', [FacturasController::class, 'index']);
+$router->get('/admin/facturas/crear', [FacturasController::class, 'crear']);
+$router->post('/admin/facturas/crear', [FacturasController::class, 'crear']);
+$router->get('/admin/facturas/editar', [FacturasController::class, 'editar']);
+$router->post('/admin/facturas/editar', [FacturasController::class, 'editar']);
+$router->post('/admin/facturas/eliminar', [FacturasController::class, 'eliminar']);
+$router->get('/admin/facturas/crear_proforma_vacia', [FacturasController::class, 'crear_factura_vacia']);
+$router->get('/admin/facturas/eliminar_producto', [FacturasController::class, 'eliminar_producto']);
 
 $router->comprobarRutas();

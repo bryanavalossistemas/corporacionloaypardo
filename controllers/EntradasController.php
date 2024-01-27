@@ -14,8 +14,7 @@ class EntradasController
     public static function index(Router $router)
     {
         $pagina_actual = $_GET['page'];
-        $pagina_actual = filter_var($pagina_actual, FILTER_VALIDATE_INT);
-        if (!$pagina_actual || $pagina_actual < 1) {
+        if (!$pagina_actual) {
             header('Location: /admin/entradas?page=1');
         }
         $registros_por_pagina = 5;
@@ -42,6 +41,7 @@ class EntradasController
 
     public static function crear(Router $router)
     {
+        $alertas = [];
         $editar = $_GET['editar'] ? true : false;
         $productos = Producto::all();
         $proveedores = Proveedor::all();
@@ -49,25 +49,43 @@ class EntradasController
         $entrada = Entrada::buscar($entrada_id);
         $productos_entradas = ProductoEntrada::obtener_todos($entrada_id);
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $producto_nombre = $_POST['producto_nombre'];
-            $producto = Producto::where('nombre', $producto_nombre);
             $proveedor_nombre = $_POST['proveedor_nombre'];
-            $proveedor = Proveedor::where('nombre', $proveedor_nombre);
-            $_POST['entrada_id'] = $entrada->id;
-            $_POST['producto_id'] = $producto->id;
-            $_POST['proveedor_id'] = $proveedor->id;
+            $producto_nombre = $_POST['producto_nombre'];
+            if ($proveedor_nombre === '') {
+                $alertas['error'][] = 'Debe Elegir un Proveedor';
+            } else {
+                $proveedor = Proveedor::where('nombre', $proveedor_nombre);
+                $_POST['proveedor_id'] = $proveedor->id;
+            }
+            if ($producto_nombre === '') {
+                $alertas['error'][] = 'Debe Elegir un Producto';
+            } else {
+                $producto = Producto::where('nombre', $producto_nombre);
+                $_POST['producto_id'] = $producto->id;
+            }
+            if ($_POST['cantidad'] === '') {
+                $alertas['error'][] = 'Elija una Cantidad de Productos';
+            } else {
+                $cantidad = $_POST['cantidad'];
+            }
             $entrada->sincronizar($_POST);
-            $entrada->guardar();
-            $producto_entrada = new ProductoEntrada;
-            $producto_entrada->sincronizar($_POST);
-            $producto_entrada->guardar();
-            $producto_stock = intval($producto->stock) + intval($producto_entrada->cantidad);
-            $_POST['stock'] = $producto_stock;
-            $producto->sincronizar($_POST);
-            $producto->guardar();
-            header("Location: /admin/entradas/crear?entrada_id=$entrada->id");
+            if (empty($alertas)) {
+                $_POST['entrada_id'] = $entrada->id;
+                $entrada->guardar();
+                $producto_entrada = new ProductoEntrada;
+                $producto_entrada->sincronizar($_POST);
+                $producto_entrada->guardar();
+                $producto_stock = intval($producto->stock) + intval($producto_entrada->cantidad);
+                $_POST['stock'] = $producto_stock;
+                $producto->sincronizar($_POST);
+                $producto->guardar();
+                header("Location: /admin/entradas/crear?entrada_id=$entrada->id");
+            }
         }
         $router->render('admin/entradas/crear', [
+            'alertas' => $alertas,
+            'cantidad' => $cantidad,
+            'producto' => $producto,
             'titulo' => "Entrada N° $entrada->id",
             'proveedores' => $proveedores,
             'entrada' => $entrada,
@@ -80,6 +98,7 @@ class EntradasController
 
     public static function editar(Router $router)
     {
+        $alertas = [];
         $productos = Producto::all();
         $proveedores = Proveedor::all();
         $entrada_id = $_GET['entrada_id'];
@@ -87,13 +106,21 @@ class EntradasController
         $productos_entradas = ProductoEntrada::obtener_todos($entrada_id);
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $proveedor_nombre = $_POST['proveedor_nombre'];
-            $proveedor = Proveedor::where('nombre', $proveedor_nombre);
-            $_POST['proveedor_id'] = $proveedor->id;
-            $entrada->sincronizar($_POST);
-            $entrada->guardar();
-            header("Location: /admin/entradas");
+            if ($proveedor_nombre === '') {
+                $alertas['error'][] = 'Debe Elegir un Proveedor';
+            } else {
+                $proveedor = Proveedor::where('nombre', $proveedor_nombre);
+            }
+            if (empty($alertas)) {
+                $_POST['proveedor_id'] = $proveedor->id;
+                $entrada->sincronizar($_POST);
+                $entrada->guardar();
+                header("Location: /admin/entradas");
+            }
         }
         $router->render('admin/entradas/editar', [
+            'alertas' => $alertas,
+            'proveedor' => $proveedor,
             'titulo' => "Actualizar Entrada N° $entrada->id",
             'proveedores' => $proveedores,
             'entrada' => $entrada,
@@ -107,7 +134,7 @@ class EntradasController
         $producto_entrada_id = $_GET['producto_entrada_id'];
         $producto_entrada = ProductoEntrada::find($producto_entrada_id);
         $producto = Producto::find($producto_entrada->producto_id);
-        $producto_stock = intval($producto->stock) -  intval($producto_entrada->cantidad);
+        $producto_stock = intval($producto->stock) - intval($producto_entrada->cantidad);
         $_GET['stock'] = $producto_stock;
         $producto->sincronizar($_GET);
         $producto->guardar();
