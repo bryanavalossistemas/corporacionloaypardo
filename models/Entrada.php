@@ -18,6 +18,15 @@ class Entrada extends ActiveRecord
         $this->proveedor_id = $args['proveedor_id'] ?? null;
         $this->proveedor_nombre = $args['proveedor_nombre'] ?? null;
     }
+    public static function paginar($por_pagina, $offset)
+    {
+        $query = "SELECT entradas.id, DATE_FORMAT(entradas.fecha, '%d/%m/%Y - %H:%i:%s') AS fecha, entradas.proveedor_id, proveedores.nombre as proveedor_nombre
+        FROM entradas
+        LEFT JOIN proveedores ON proveedores.id = proveedor_id
+        ORDER BY entradas.id ASC LIMIT $por_pagina OFFSET $offset";
+        $resultado = self::consultarSQL($query);
+        return $resultado;
+    }
 
     public static function buscar($id)
     {
@@ -30,13 +39,4 @@ class Entrada extends ActiveRecord
         return array_shift($resultado);
     }
 
-    public static function buscar_todas($por_pagina, $offset)
-    {
-        $query = "SELECT entradas.id, entradas.fecha, entradas.proveedor_id, proveedores.nombre as proveedor_nombre
-        FROM entradas
-        LEFT JOIN proveedores ON proveedores.id = proveedor_id
-        ORDER BY entradas.id ASC LIMIT $por_pagina OFFSET $offset";
-        $resultado = self::consultarSQL($query);
-        return $resultado;
-    }
 }

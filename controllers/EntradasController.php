@@ -23,7 +23,7 @@ class EntradasController
         if ($paginacion->total_paginas() < $pagina_actual) {
             header('Location: /admin/entradas?page=1');
         }
-        $entradas = Entrada::buscar_todas($registros_por_pagina, $paginacion->offset());
+        $entradas = Entrada::paginar($registros_por_pagina, $paginacion->offset());
         $router->render('admin/entradas/index', [
             'titulo' => 'Entradas',
             'paginacion' => $paginacion->paginacion(),
@@ -98,7 +98,6 @@ class EntradasController
 
     public static function editar(Router $router)
     {
-        $alertas = [];
         $productos = Producto::all();
         $proveedores = Proveedor::all();
         $entrada_id = $_GET['entrada_id'];

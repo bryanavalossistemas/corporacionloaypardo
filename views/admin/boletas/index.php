@@ -2,20 +2,20 @@
 
 <div class="dashboard__contenedor-boton">
     <div class="dashboard__contenedor-boton--end">
-        <a class="dashboard__boton" href="/admin/proformas/crear_proforma_vacia">
+        <a class="dashboard__boton" href="/admin/boletas/crear_boleta_vacia">
             <i class="fa-solid fa-circle-plus"></i>
-            Añadir Proforma
+            Añadir Boleta
         </a>
     </div>
 </div>
 
 <div class="dashboard__contenedor">
-    <?php if (!empty($proformas)) { ?>
+    <?php if (!empty($boletas)) { ?>
         <table class="table">
             <thead class="table__thead">
                 <tr>
                     <th scope="col" class="table__th">Numero</th>
-                    <th scope="col" class="table__th">Nombre Solicitante</th>
+                    <th scope="col" class="table__th">Cliente</th>
                     <th scope="col" class="table__th">Fecha</th>
                     <th scope="col" class="table__th">Total</th>
                     <th scope="col" class="table__th"></th>
@@ -23,27 +23,27 @@
             </thead>
 
             <tbody class="table__tbody">
-                <?php foreach ($proformas as $proforma) { ?>
+                <?php foreach ($boletas as $boleta) { ?>
                     <tr class="table__tr">
                         <td class="table__td">
-                            Proforma N° <?php echo $proforma->id; ?>
+                            Boleta N° <?php echo $boleta->id; ?>
                         </td>
                         <td class="table__td">
-                            <?php echo $proforma->nombre_solicitante; ?>
+                            <?php echo $boleta->cliente_nombre; ?>
                         </td>
                         <td class="table__td">
-                            <?php echo $proforma->fecha; ?>
+                            <?php echo $boleta->fecha; ?>
                         </td>
                         <td class="table__td">
-                            S/. <?php echo $proforma->total; ?>
+                            S/. <?php echo $boleta->total; ?>
                         </td>
                         <td class="table__td--acciones">
-                            <a class="table__accion table__accion--editar" href="/admin/proformas/editar?proforma_id=<?php echo $proforma->id; ?>">
+                            <a class="table__accion table__accion--editar" href="/admin/boletas/editar?boleta_id=<?php echo $boleta->id; ?>">
                                 <i class="fa-solid fa-user-pen"></i>
                                 Editar
                             </a>
-                            <form class="table__formulario table__accion--eliminar" method="POST" action="/admin/proformas/eliminar">
-                                <input type="hidden" name="proforma_id" value="<?php echo $proforma->id; ?>">
+                            <form class="table__formulario table__accion--eliminar" method="POST" action="/admin/boletas/eliminar">
+                                <input type="hidden" name="boleta_id" value="<?php echo $boleta->id; ?>">
                                 <button class="table__accion " type="submit">
                                     <i class="fa-solid fa-circle-xmark"></i>
                                     Eliminar
@@ -55,7 +55,7 @@
             </tbody>
         </table>
     <?php } else { ?>
-        <p class="text-center">No Hay Proformas Aún</p>
+        <p class="text-center">No Hay Boletas Aún</p>
     <?php } ?>
 </div>
 

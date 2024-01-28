@@ -1,8 +1,37 @@
 <fieldset class="formulario__fieldset">
-    <legend class="formulario__legend">Informacion Proforma</legend>
-    <div class="formulario__campo">
-        <label class="formulario__label" for="nombre_solicitante">Nombre Solicitante</label>
-        <input class="formulario__input" type="text" name="nombre_solicitante" id="nombre_solicitante" value="<?php echo $nombre_solicitante; ?>">
+    <legend class="formulario__legend">Informacion Factura</legend>
+    <div class="formulario__campo formulario__campo--proforma-producto">
+        <div>
+            <label class="formulario__label" for="proveedor">Seleccionar Cliente</label>
+            <input class="formulario__input" type="text" name="cliente_nombre" id="cliente" list="lista_clientes" value="<?php echo $factura->cliente_nombre; ?>">
+            <datalist id="lista_clientes">
+                <?php foreach ($clientes as $cliente) { ?>
+                    <option value="<?php echo $cliente->nombre; ?>" />
+                <?php } ?>
+            </datalist>
+        </div>
+        <div>
+            <label class="formulario__label" for="metodo">Metodo de Pago</label>
+            <div>
+                <select class="formulario__select" id="metodo" name="metodo_id">
+                    <option value="">- Seleccionar -</option>
+                    <?php foreach ($metodos as $metodo) { ?>
+                        <option <?php echo ($pago->metodo_id === $metodo->id) ? 'selected' : '' ?> value="<?php echo $metodo->id; ?>"><?php echo $metodo->nombre; ?></option>
+                    <?php } ?>
+                </select>
+            </div>
+        </div>
+        <div>
+            <label class="formulario__label" for="forma">Forma de Pago</label>
+            <div>
+                <select class="formulario__select" id="forma" name="forma_id">
+                    <option value="">- Seleccionar -</option>
+                    <?php foreach ($formas as $forma) { ?>
+                        <option <?php echo ($pago->forma_id === $forma->id) ? 'selected' : '' ?> value="<?php echo $forma->id; ?>"><?php echo $forma->nombre; ?></option>
+                    <?php } ?>
+                </select>
+            </div>
+        </div>
     </div>
     <div class="formulario__campo formulario__campo--proforma-producto">
         <div>
@@ -27,20 +56,20 @@
         <?php if (isset($seleccionar_producto)) { ?>
             <input class="formulario__submit formulario__submit--width-auto" type="submit" value="<?php echo $seleccionar_producto; ?>">
         <?php } else { ?>
-            <a class="formulario__submit formulario__submit--width-auto" href="/admin/proformas/crear?proforma_id=<?php echo $proforma->id; ?>&editar=true">Actualizar Productos de la Proforma</a>
+            <a class="formulario__submit formulario__submit--width-auto" href="/admin/facturas/crear?factura_id=<?php echo $factura->id; ?>&editar=true">Actualizar Productos de la Factura</a>
         <?php  } ?>
         <div class="formulario__detalle-proforma">
             <div class="formulario__campo">
                 <label class="formulario__label" for="subtotal">Subtotal</label>
-                <input class="formulario__input" type="text" name="subtotal" id="subtotal" value="<?php echo $proforma->subtotal; ?>">
+                <input class="formulario__input" type="text" name="subtotal" id="subtotal" value="<?php echo $factura->subtotal; ?>">
             </div>
             <div class="formulario__campo">
                 <label class="formulario__label" for="igv">Igv</label>
-                <input class="formulario__input" type="text" name="igv" id="igv" value="<?php echo $proforma->igv; ?>">
+                <input class="formulario__input" type="text" name="igv" id="igv" value="<?php echo $factura->igv; ?>">
             </div>
             <div class="formulario__campo">
                 <label class="formulario__label" for="total">Total</label>
-                <input class="formulario__input" type="text" name="total" id="total" value="<?php echo $proforma->total; ?>">
+                <input class="formulario__input" type="text" name="total" id="total" value="<?php echo $factura->total; ?>">
             </div>
         </div>
     </div>
@@ -57,34 +86,34 @@
             </tr>
         </thead>
         <tbody class="table__tbody">
-            <?php foreach ($productos_proformas as $producto_proforma) { ?>
+            <?php foreach ($productos_facturas as $producto_factura) { ?>
                 <tr class="table__tr">
                     <td class="table__td">
                         <div class="table__imagen">
                             <picture>
-                                <source srcset="<?php echo $_ENV['HOST'] . '/img/productos/' . $producto_proforma->producto_imagen; ?>.webp" type="image/webp">
-                                <source srcset="<?php echo $_ENV['HOST'] . '/img/productos/' . $producto_proforma->producto_imagen; ?>.png" type="image/png">
-                                <img src="<?php echo $_ENV['HOST'] . '/img/productos/' . $producto_proforma->producto_imagen; ?>.png" alt="Imagen Producto">
+                                <source srcset="<?php echo $_ENV['HOST'] . '/img/productos/' . $producto_factura->producto_imagen; ?>.webp" type="image/webp">
+                                <source srcset="<?php echo $_ENV['HOST'] . '/img/productos/' . $producto_factura->producto_imagen; ?>.png" type="image/png">
+                                <img src="<?php echo $_ENV['HOST'] . '/img/productos/' . $producto_factura->producto_imagen; ?>.png" alt="Imagen Producto">
                             </picture>
                         </div>
                     </td>
                     <td class="table__td">
-                        <?php echo $producto_proforma->producto_nombre; ?>
+                        <?php echo $producto_factura->producto_nombre; ?>
                     </td>
                     <td class="table__td">
-                        <?php echo $producto_proforma->precio_unitario; ?>
+                        <?php echo $producto_factura->precio_unitario; ?>
                     </td>
                     <td class="table__td">
-                        <?php echo $producto_proforma->cantidad; ?>
+                        <?php echo $producto_factura->cantidad; ?>
                     </td>
                     <td class="table__td">
-                        <?php echo $producto_proforma->descuento; ?>
+                        <?php echo $producto_factura->descuento; ?>
                     </td>
                     <td class="table__td">
-                        <?php echo $producto_proforma->importe; ?>
+                        <?php echo $producto_factura->importe; ?>
                     </td>
                     <td class="table__td--acciones">
-                        <a class="table__formulario table__accion--eliminar" href="/admin/proformas/eliminar_producto?producto_proforma_id=<?php echo $producto_proforma->id; ?>">
+                        <a class="table__formulario table__accion--eliminar" href="/admin/facturas/eliminar_producto?producto_factura_id=<?php echo $producto_factura->id; ?>">
                             <div class="table__accion">
                                 <i class="fa-solid fa-circle-xmark"></i>
                                 Eliminar

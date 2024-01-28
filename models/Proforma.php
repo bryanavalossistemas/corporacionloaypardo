@@ -25,6 +25,15 @@ class Proforma extends ActiveRecord
         $this->tienda_id = $args['tienda_id'] ?? null;
     }
 
+    public static function paginar($por_pagina, $offset)
+    {
+        $query = "SELECT proformas.id, proformas.nombre_solicitante, DATE_FORMAT(proformas.fecha, '%d/%m/%Y - %H:%i:%s') AS fecha, proformas.subtotal, proformas.igv, proformas.total
+        FROM proformas
+        ORDER BY proformas.id ASC LIMIT $por_pagina OFFSET $offset";
+        $resultado = self::consultarSQL($query);
+        return $resultado;
+    }
+
     public static function buscar($id)
     {
         $query = "SELECT proformas.id, proformas.nombre_solicitante, proformas.fecha, proformas.subtotal, proformas.igv, proformas.total, 
@@ -34,14 +43,5 @@ class Proforma extends ActiveRecord
         WHERE proformas.id = $id";
         $resultado = self::consultarSQL($query);
         return array_shift($resultado);
-    }
-
-    public static function buscar_todas($por_pagina, $offset)
-    {
-        $query = "SELECT proformas.id, proformas.nombre_solicitante, proformas.fecha, proformas.subtotal, proformas.igv, proformas.total
-        FROM proformas
-        ORDER BY proformas.id ASC LIMIT $por_pagina OFFSET $offset";
-        $resultado = self::consultarSQL($query);
-        return $resultado;
     }
 }

@@ -43,7 +43,7 @@ class ProformasController
         $editar = $_GET['editar'] ? true : false;
         $productos = Producto::all();
         $proforma_id = $_GET['proforma_id'];
-        $proforma = Proforma::buscar($proforma_id);
+        $proforma = Proforma::paginar($proforma_id);
         $productos_proformas = ProductoProforma::obtener_todos($proforma_id);
         $nombre_solicitante = 'varios';
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {

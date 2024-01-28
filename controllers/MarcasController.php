@@ -53,7 +53,7 @@ class MarcasController
             $marca->sincronizar($_POST);
             $alertas = $marca->validar();
             if (empty($alertas)) {
-                $resultado = $marca->guardar();
+                $marca->guardar();
                 header('Location: /admin/productos/marcas');
             }
         }
@@ -68,7 +68,7 @@ class MarcasController
     {
         $id = $_POST['id'];
         $marca = Marca::find($id);
-        $resultado = $marca->eliminar();
+        $marca->eliminar();
         header('Location: /admin/productos/marcas');
     }
 }

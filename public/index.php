@@ -5,13 +5,16 @@ require_once __DIR__ . '/../includes/app.php';
 use MVC\Router;
 use Controllers\AuthController;
 use Controllers\BancosController;
+use Controllers\BoletasController;
 use Controllers\CategoriasController;
 use Controllers\ClientesController;
 use Controllers\CuentasProveedorController;
 use Controllers\CuentasTiendaController;
 use Controllers\EntradasController;
 use Controllers\FacturasController;
+use Controllers\FormasController;
 use Controllers\MarcasController;
+use Controllers\MetodosController;
 use Controllers\MonedasController;
 use Controllers\ProductosController;
 use Controllers\ProformasController;
@@ -132,6 +135,22 @@ $router->get('/admin/tipos_cuenta/editar', [TiposCuentaController::class, 'edita
 $router->post('/admin/tipos_cuenta/editar', [TiposCuentaController::class, 'editar']);
 $router->post('/admin/tipos_cuenta/eliminar', [TiposCuentaController::class, 'eliminar']);
 
+// Metodos
+$router->get('/admin/facturas/metodos', [MetodosController::class, 'index']);
+$router->get('/admin/facturas/metodos/crear', [MetodosController::class, 'crear']);
+$router->post('/admin/facturas/metodos/crear', [MetodosController::class, 'crear']);
+$router->get('/admin/facturas/metodos/editar', [MetodosController::class, 'editar']);
+$router->post('/admin/facturas/metodos/editar', [MetodosController::class, 'editar']);
+$router->post('/admin/facturas/metodos/eliminar', [MetodosController::class, 'eliminar']);
+
+// Formas
+$router->get('/admin/facturas/formas', [FormasController::class, 'index']);
+$router->get('/admin/facturas/formas/crear', [FormasController::class, 'crear']);
+$router->post('/admin/facturas/formas/crear', [FormasController::class, 'crear']);
+$router->get('/admin/facturas/formas/editar', [FormasController::class, 'editar']);
+$router->post('/admin/facturas/formas/editar', [FormasController::class, 'editar']);
+$router->post('/admin/facturas/formas/eliminar', [FormasController::class, 'eliminar']);
+
 // Entradas
 $router->get('/admin/entradas', [EntradasController::class, 'index']);
 $router->get('/admin/entradas/crear', [EntradasController::class, 'crear']);
@@ -159,7 +178,17 @@ $router->post('/admin/facturas/crear', [FacturasController::class, 'crear']);
 $router->get('/admin/facturas/editar', [FacturasController::class, 'editar']);
 $router->post('/admin/facturas/editar', [FacturasController::class, 'editar']);
 $router->post('/admin/facturas/eliminar', [FacturasController::class, 'eliminar']);
-$router->get('/admin/facturas/crear_proforma_vacia', [FacturasController::class, 'crear_factura_vacia']);
+$router->get('/admin/facturas/crear_factura_vacia', [FacturasController::class, 'crear_factura_vacia']);
 $router->get('/admin/facturas/eliminar_producto', [FacturasController::class, 'eliminar_producto']);
+
+// Boletas
+$router->get('/admin/boletas', [BoletasController::class, 'index']);
+$router->get('/admin/boletas/crear', [BoletasController::class, 'crear']);
+$router->post('/admin/boletas/crear', [BoletasController::class, 'crear']);
+$router->get('/admin/boletas/editar', [BoletasController::class, 'editar']);
+$router->post('/admin/boletas/editar', [BoletasController::class, 'editar']);
+$router->post('/admin/boletas/eliminar', [BoletasController::class, 'eliminar']);
+$router->get('/admin/boletas/crear_boleta_vacia', [BoletasController::class, 'crear_boleta_vacia']);
+$router->get('/admin/boletas/eliminar_producto', [BoletasController::class, 'eliminar_producto']);
 
 $router->comprobarRutas();

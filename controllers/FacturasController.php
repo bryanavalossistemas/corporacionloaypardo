@@ -3,10 +3,13 @@
 namespace Controllers;
 
 use Classes\Paginacion;
-use Model\Factura;
+use Model\Cliente;
+use Model\Metodo;
+use Model\Pago;
 use Model\Producto;
-use Model\ProductoProforma;
-use Model\Proforma;
+use Model\Factura;
+use Model\Forma;
+use Model\ProductoFactura;
 use MVC\Router;
 
 class FacturasController
@@ -18,7 +21,7 @@ class FacturasController
             header('Location: /admin/facturas?page=1');
         }
         $registros_por_pagina = 5;
-        $total = Proforma::total();
+        $total = Factura::total();
         $paginacion = new Paginacion($pagina_actual, $registros_por_pagina, $total);
         if ($paginacion->total_paginas() < $pagina_actual) {
             header('Location: /admin/facturas?page=1');
@@ -31,29 +34,38 @@ class FacturasController
         ]);
     }
 
-    public static function crear_proforma_vacia()
+    public static function crear_factura_vacia()
     {
-        $proforma = new Proforma;
-        $resultado = $proforma->guardar();
-        $proforma_id = $resultado['id'];
-        header("Location: /admin/facturas/crear?proforma_id=$proforma_id");
+        $pago = new Pago;
+        $resultado = $pago->guardar();
+        $pago_id = $resultado['id'];
+        $factura = new Factura;
+        $factura->pago_id = $pago_id;
+        $resultado = $factura->guardar();
+        $factura_id = $resultado['id'];
+        header("Location: /admin/facturas/crear?factura_id=$factura_id");
     }
 
     public static function crear(Router $router)
     {
         $editar = $_GET['editar'] ? true : false;
         $productos = Producto::all();
-        $proforma_id = $_GET['proforma_id'];
-        $proforma = Proforma::buscar($proforma_id);
-        $productos_proformas = ProductoProforma::obtener_todos($proforma_id);
-        $nombre_solicitante = 'varios';
+        $factura_id = $_GET['factura_id'];
+        $factura = Factura::buscar($factura_id);
+        $clientes = Cliente::all();
+        $productos_facturas = ProductoFactura::obtener_todos($factura_id);
+        $pago = Pago::buscar($factura->pago_id);
+        $metodos = Metodo::all();
+        $formas = Forma::all();
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if ($_POST['nombre_solicitante'] === '') {
-                $alertas['error'][] = 'Nombre de Solicitante Vacio';
-            } else {
-                $nombre_solicitante = $_POST['nombre_solicitante'];
-            }
+            $cliente_nombre = $_POST['cliente_nombre'];
             $producto_nombre = $_POST['producto_nombre'];
+            if ($cliente_nombre === '') {
+                $alertas['error'][] = 'Debe Elegir un Cliente';
+            } else {
+                $cliente = Cliente::where('nombre', $cliente_nombre);
+                $_POST['cliente_id'] = $cliente->id;
+            }
             if ($producto_nombre === '') {
                 $alertas['error'][] = 'Debe Elegir un Producto';
             } else {
@@ -61,37 +73,49 @@ class FacturasController
                 $producto = Producto::where('nombre', $producto_nombre);
                 $_POST['producto_id'] = $producto->id;
             }
+            if ($_POST['metodo_id'] === '') {
+                $alertas['error'][] = 'Debe Elegir un Metodo de Pago';
+            }
+            if ($_POST['forma_id'] === '') {
+                $alertas['error'][] = 'Debe Elegir una Forma de Pago';
+            }
+            $pago->sincronizar($_POST);
+            $factura->sincronizar($_POST);
             if (empty($alertas)) {
                 $_POST['producto_id'] = $producto->id;
-                $producto_proforma = new ProductoProforma;
-                $_POST['proforma_id'] = $proforma->id;
+                $producto_factura = new ProductoFactura;
+                $_POST['factura_id'] = $factura->id;
                 $precio_unitario = doubleval($producto->venta);
                 $cantidad = intval($_POST['cantidad']) !== 0 ? intval($_POST['cantidad']) : 1;
                 $descuento = doubleval($_POST['descuento']);
                 $importe = $precio_unitario * $cantidad - $descuento;
                 $_POST['precio_unitario'] = $precio_unitario;
                 $_POST['importe'] = $importe;
-                $producto_proforma->sincronizar($_POST);
-                $producto_proforma->guardar();
-                $proforma_valores = ProductoProforma::obtener_valores($proforma_id);
-                $_POST['total'] = $proforma_valores['total'];
-                $_POST['igv'] = $proforma_valores['igv'];
-                $_POST['subtotal'] = $proforma_valores['subtotal'];
-                $proforma->sincronizar($_POST);
-                $proforma->guardar();
+                $producto_factura->sincronizar($_POST);
+                $producto_factura->guardar();
+                $factura_valores = ProductoFactura::obtener_valores($factura_id);
+                $_POST['total'] = $factura_valores['total'];
+                $_POST['igv'] = $factura_valores['igv'];
+                $_POST['subtotal'] = $factura_valores['subtotal'];
+                $factura->sincronizar($_POST);
+                $factura->guardar();
                 $producto_stock = intval($producto->stock) - $cantidad;
                 $_POST['stock'] = $producto_stock;
                 $producto->sincronizar($_POST);
                 $producto->guardar();
-                header("Location: /admin/facturas/crear?proforma_id=$proforma->id");
+                $pago->guardar();
+                header("Location: /admin/facturas/crear?factura_id=$factura->id");
             }
         }
         $router->render('admin/facturas/crear', [
+            'metodos' => $metodos,
+            'formas' => $formas,
+            'clientes' => $clientes,
+            'pago' => $pago,
             'alertas' => $alertas,
-            'nombre_solicitante' => $nombre_solicitante,
-            'titulo' => "Proforma N° $proforma->id",
-            'proforma' => $proforma,
-            'productos_proformas' => $productos_proformas,
+            'titulo' => "Factura N° $factura->id",
+            'factura' => $factura,
+            'productos_facturas' => $productos_facturas,
             'productos' => $productos,
             'seleccionar_producto' => 'Seleccionar Producto',
             'editar' => $editar
@@ -101,49 +125,73 @@ class FacturasController
     public static function editar(Router $router)
     {
         $productos = Producto::all();
-        $proforma_id = $_GET['proforma_id'];
-        $proforma = Proforma::buscar($proforma_id);
-        $productos_proformas = ProductoProforma::obtener_todos($proforma->id);
+        $clientes = Cliente::all();
+        $factura_id = $_GET['factura_id'];
+        $factura = Factura::buscar($factura_id);
+        $productos_facturas = ProductoFactura::obtener_todos($factura->id);
+        $pago = Pago::buscar($factura->pago_id);
+        $metodos = Metodo::all();
+        $formas = Forma::all();
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $proforma->sincronizar($_POST);
-            $proforma->guardar();
-            header("Location: /admin/facturas");
+            $cliente_nombre = $_POST['cliente_nombre'];
+            if ($cliente_nombre === '') {
+                $alertas['error'][] = 'Debe Elegir un Cliente';
+            } else {
+                $cliente = Cliente::where('nombre', $cliente_nombre);
+                $_POST['cliente_id'] = $cliente->id;
+            }
+            if ($_POST['metodo_id'] === '') {
+                $alertas['error'][] = 'Debe Elegir un Metodo de Pago';
+            }
+            if ($_POST['forma_id'] === '') {
+                $alertas['error'][] = 'Debe Elegir una Forma de Pago';
+            }
+            $factura->sincronizar($_POST);
+            $pago->sincronizar($_POST);
+            if (empty($alertas)) {
+                $pago->guardar();
+                $factura->guardar();
+                header("Location: /admin/facturas");
+            }
         }
         $router->render('admin/facturas/editar', [
+            'metodos' => $metodos,
+            'formas' => $formas,
+            'clientes' => $clientes,
+            'pago' => $pago,
             'alertas' => $alertas,
-            'nombre_solicitante' => $proforma->nombre_solicitante,
-            'titulo' => "Actualizar Proforma N° $proforma->id",
-            'proforma' => $proforma,
-            'productos_proformas' => $productos_proformas,
+            'titulo' => "Actualizar Factura N° $factura->id",
+            'factura' => $factura,
+            'productos_facturas' => $productos_facturas,
             'productos' => $productos
         ]);
     }
 
     public static function eliminar_producto()
     {
-        $producto_proforma_id = $_GET['producto_proforma_id'];
-        $producto_proforma = ProductoProforma::find($producto_proforma_id);
-        $producto = Producto::find($producto_proforma->producto_id);
-        $producto_stock = intval($producto->stock) + intval($producto_proforma->cantidad);
+        $producto_factura_id = $_GET['producto_factura_id'];
+        $producto_factura = ProductoFactura::find($producto_factura_id);
+        $producto = Producto::find($producto_factura->producto_id);
+        $producto_stock = intval($producto->stock) + intval($producto_factura->cantidad);
         $_GET['stock'] = $producto_stock;
         $producto->sincronizar($_GET);
         $producto->guardar();
-        $producto_proforma->eliminar();
-        $proforma = Proforma::find($producto_proforma->proforma_id);
-        $proforma_valores = ProductoProforma::obtener_valores($proforma->id);
-        $_POST['total'] = $proforma_valores['total'];
-        $_POST['igv'] = $proforma_valores['igv'];
-        $_POST['subtotal'] = $proforma_valores['subtotal'];
-        $proforma->sincronizar($_POST);
-        $proforma->guardar();
-        header("Location: /admin/facturas/crear?proforma_id=$producto_proforma->proforma_id");
+        $producto_factura->eliminar();
+        $factura = Factura::find($producto_factura->factura_id);
+        $factura_valores = ProductoFactura::obtener_valores($factura->id);
+        $_POST['total'] = $factura_valores['total'];
+        $_POST['igv'] = $factura_valores['igv'];
+        $_POST['subtotal'] = $factura_valores['subtotal'];
+        $factura->sincronizar($_POST);
+        $factura->guardar();
+        header("Location: /admin/facturas/crear?factura_id=$producto_factura->factura_id");
     }
 
     public static function eliminar()
     {
-        $proforma_id = $_POST['proforma_id'];
-        $proforma = Proforma::find($proforma_id);
-        $proforma->eliminar();
+        $factura_id = $_POST['factura_id'];
+        $factura = Factura::find($factura_id);
+        $factura->eliminar();
         header('Location: /admin/facturas');
     }
 }
